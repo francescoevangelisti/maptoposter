@@ -94,6 +94,13 @@ def load_theme(theme_name="feature_based"):
             print(f"  {theme['description']}")
         return theme
 
+# Filter to polygon geometries to avoid plotting point/line markers.
+def filter_polygon_geometries(gdf):
+    if gdf is None or gdf.empty:
+        return None
+    polygons = gdf[gdf.geometry.type.isin(["Polygon", "MultiPolygon"])]
+    return polygons if not polygons.empty else None
+
 # Load theme (can be changed via command line or input)
 THEME = None  # Will be loaded later
 
@@ -230,6 +237,7 @@ def create_poster(city, country, point, dist, output_file):
             water = ox.features_from_point(point, tags={'natural': 'water', 'waterway': 'riverbank'}, dist=dist)
         except:
             water = None
+        water = filter_polygon_geometries(water)
         pbar.update(1)
         time.sleep(0.3)
         
@@ -239,6 +247,7 @@ def create_poster(city, country, point, dist, output_file):
             parks = ox.features_from_point(point, tags={'leisure': 'park', 'landuse': 'grass'}, dist=dist)
         except:
             parks = None
+        parks = filter_polygon_geometries(parks)
         pbar.update(1)
     
     print("✓ All data downloaded successfully!")
